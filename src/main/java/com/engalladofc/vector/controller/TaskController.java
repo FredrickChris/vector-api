@@ -37,16 +37,14 @@ public class TaskController {
     //          CREATE TASK          //
     //===============================//
     @PostMapping("/tasks")
-    public void createTask(
-            @RequestParam String title,
-            @RequestParam String subject,
-            @RequestParam(required = false) String description,
-            @RequestParam(required = false) String deadline,
-            @RequestParam(required = false) Integer difficulty,
-            @RequestParam Status status) {
-        service.createTask(title, subject, description,
-                deadline != null ? LocalDate.parse(deadline) : null,
-                difficulty, status);
+    public void createTask(@RequestBody TaskRequest body) {
+        service.createTask(
+        		body.title, 
+        		body.subject, 
+        		body.description,
+                body.deadline != null ? LocalDate.parse(body.deadline) : null,
+                body.difficulty, 
+                body.status);
         service.saveTasks();
     }
 
@@ -55,17 +53,15 @@ public class TaskController {
     //           EDIT TASK           //
     //===============================//
     @PutMapping("/tasks/{id}")
-    public void editTask(
-            @PathVariable int id,
-            @RequestParam String title,
-            @RequestParam String subject,
-            @RequestParam(required = false) String description,
-            @RequestParam(required = false) String deadline,
-            @RequestParam(required = false) Integer difficulty,
-            @RequestParam Status status) {
-        service.editTask(id, title, subject, description,
-                deadline != null ? LocalDate.parse(deadline) : null,
-                difficulty, status);
+    public void editTask(@PathVariable int id, @RequestBody TaskRequest body) {
+        service.editTask(
+        		id, 
+        		body.title, 
+        		body.subject, 
+        		body.description,
+                body.deadline != null ? LocalDate.parse(body.deadline) : null,
+                body.difficulty, 
+                body.status);
         service.saveTasks();
     }
 
@@ -109,9 +105,7 @@ public class TaskController {
     }
 
     @GetMapping("/tasks/filter/difficulty")
-    public List<Task> filterByDifficulty(
-            @RequestParam Integer min,
-            @RequestParam Integer max) {
+    public List<Task> filterByDifficulty(@RequestParam Integer min, @RequestParam Integer max) {
         return analysis.filterByDifficulty(service.getTaskList(), min, max);
     }
 
@@ -156,5 +150,18 @@ public class TaskController {
     @GetMapping("/validate/difficulty")
     public Error validateDifficulty(@RequestParam Integer difficulty) {
         return service.validateDifficulty(difficulty);
+    }
+
+
+    //===============================//
+    //         REQUEST BODIES        //
+    //===============================//
+    static class TaskRequest {
+        public String title;
+        public String subject;
+        public String description;
+        public String deadline;
+        public Integer difficulty;
+        public Status status;
     }
 }
