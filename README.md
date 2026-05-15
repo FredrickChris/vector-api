@@ -92,17 +92,17 @@ To build a fully functional backend system that demonstrates:
 com.engalladofc.vector
 - VectorApplication.java
 - controller
--- TaskController.java
+  - TaskController.java
 - service
--- TaskService.java
--- AnalysisService.java
+  - TaskService.java
+  - AnalysisService.java
 - repository
--- TaskRepository.java
+  - TaskRepository.java
 - model
--- Task.java
--- Status.java
--- Error.java
--- ViewResult.java
+  - Task.java
+  - Status.java
+  - Error.java
+  - ViewResult.java
 
 ---
 
