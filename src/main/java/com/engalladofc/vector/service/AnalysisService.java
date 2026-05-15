@@ -1,12 +1,16 @@
 package com.engalladofc.vector.service;
 
-import java.util.ArrayList;
-import java.time.LocalDate;	
-import java.time.temporal.ChronoUnit;
+import org.springframework.stereotype.Service;
 
 import com.engalladofc.vector.model.Task;
 import com.engalladofc.vector.model.Status;
 
+
+import java.util.ArrayList;
+import java.time.LocalDate;	
+import java.time.temporal.ChronoUnit;
+
+@Service
 public class AnalysisService {
 	
     //===============================//
