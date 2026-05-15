@@ -90,19 +90,19 @@ To build a fully functional backend system that demonstrates:
 ## 📁 Project Structure
 
 com.engalladofc.vector
-├── VectorApplication.java
-├── controller
-│ └── TaskController.java
-├── service
-│ ├── TaskService.java
-│ └── AnalysisService.java
-├── repository
-│ └── TaskRepository.java
-├── model
-│ ├── Task.java
-│ ├── Status.java
-│ ├── Error.java
-│ └── ViewResult.java
+- VectorApplication.java
+- controller
+-- TaskController.java
+- service
+-- TaskService.java
+-- AnalysisService.java
+- repository
+-- TaskRepository.java
+- model
+-- Task.java
+-- Status.java
+-- Error.java
+-- ViewResult.java
 
 ---
 
