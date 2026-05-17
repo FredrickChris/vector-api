@@ -5,6 +5,8 @@ import org.springframework.web.bind.annotation.*;
 import com.engalladofc.vector.model.Task;
 import com.engalladofc.vector.model.Error;
 import com.engalladofc.vector.model.Status;
+import com.engalladofc.vector.dto.ApiResponse;
+import com.engalladofc.vector.dto.TaskRequest;
 import com.engalladofc.vector.service.TaskService;
 import com.engalladofc.vector.service.AnalysisService;
 
@@ -27,9 +29,9 @@ public class TaskController {
     //           TASK LIST           //
     //===============================//
     @GetMapping("/tasks")
-    public List<Task> getTasks() {
+    public ApiResponse<List<Task>> getTasks() {
         service.readTasks();
-        return service.getTaskList();
+        return new ApiResponse<>(true, "Tasks fetched", service.getTaskList());
     }
 
 
@@ -37,15 +39,17 @@ public class TaskController {
     //          CREATE TASK          //
     //===============================//
     @PostMapping("/tasks")
-    public void createTask(@RequestBody TaskRequest body) {
+    public ApiResponse<Void> createTask(@RequestBody TaskRequest body) {
         service.createTask(
         		body.title, 
         		body.subject, 
         		body.description,
                 body.deadline != null ? LocalDate.parse(body.deadline) : null,
                 body.difficulty, 
-                body.status);
+                body.status
+        	);
         service.saveTasks();
+        return new ApiResponse<>(true, "Task created", null);
     }
 
 
@@ -53,7 +57,7 @@ public class TaskController {
     //           EDIT TASK           //
     //===============================//
     @PutMapping("/tasks/{id}")
-    public void editTask(@PathVariable int id, @RequestBody TaskRequest body) {
+    public ApiResponse<Void> editTask(@PathVariable int id, @RequestBody TaskRequest body) {
         service.editTask(
         		id, 
         		body.title, 
@@ -61,8 +65,10 @@ public class TaskController {
         		body.description,
                 body.deadline != null ? LocalDate.parse(body.deadline) : null,
                 body.difficulty, 
-                body.status);
+                body.status
+        	);
         service.saveTasks();
+        return new ApiResponse<>(true, "Task updated", null);
     }
 
 
@@ -70,9 +76,10 @@ public class TaskController {
     //          DELETE TASK          //
     //===============================//
     @DeleteMapping("/tasks/{id}")
-    public void deleteTask(@PathVariable int id) {
+    public ApiResponse<Void> deleteTask(@PathVariable int id) {
         service.deleteTask(id);
         service.saveTasks();
+        return new ApiResponse<>(true, "Task deleted", null);
     }
 
 
@@ -80,13 +87,19 @@ public class TaskController {
     //          SAVE & READ          //
     //===============================//
     @PostMapping("/tasks/save")
-    public void saveTasks() {
+    public ApiResponse<Void> saveTasks() {
         service.saveTasks();
+        return new ApiResponse<>(true, "Tasks saved", null);
     }
 
     @PostMapping("/tasks/read")
-    public void readTasks() {
+    public ApiResponse<Void> readTasks() {
         service.readTasks();
+        return new ApiResponse<>(
+        		true, 
+        		"Tasks loaded", 
+        		null
+        	);
     }
 
 
@@ -94,24 +107,40 @@ public class TaskController {
     //           FILTERING           //
     //===============================//
     @GetMapping("/tasks/filter/date")
-    public List<Task> filterByDate(@RequestParam(required = false) String date) {
-        return analysis.filterByDate(service.getTaskList(),
-                date != null ? LocalDate.parse(date) : null);
+    public ApiResponse<List<Task>> filterByDate(@RequestParam(required = false) String date) {
+        return new ApiResponse<>(
+        		true, 
+        		"Filtered by date",
+                analysis.filterByDate(service.getTaskList(), date != null ? LocalDate.parse(date) : null
+                	)
+        	);
     }
 
     @GetMapping("/tasks/filter/days")
-    public List<Task> filterByDays(@RequestParam Integer days) {
-        return analysis.filterByDays(service.getTaskList(), days);
+    public ApiResponse<List<Task>> filterByDays(@RequestParam Integer days) {
+        return new ApiResponse<>(
+        		true, 
+        		"Filtered by days",
+                analysis.filterByDays(service.getTaskList(), days)
+        	);
     }
 
     @GetMapping("/tasks/filter/difficulty")
-    public List<Task> filterByDifficulty(@RequestParam Integer min, @RequestParam Integer max) {
-        return analysis.filterByDifficulty(service.getTaskList(), min, max);
+    public ApiResponse<List<Task>> filterByDifficulty(@RequestParam Integer min, @RequestParam Integer max) {
+        return new ApiResponse<>(
+        		true, 
+        		"Filtered by difficulty",
+                analysis.filterByDifficulty(service.getTaskList(), min, max)
+        	);
     }
 
     @GetMapping("/tasks/filter/status")
-    public List<Task> filterByStatus(@RequestParam Status status) {
-        return analysis.filterByStatus(service.getTaskList(), status);
+    public ApiResponse<List<Task>> filterByStatus(@RequestParam Status status) {
+        return new ApiResponse<>(
+        		true, 
+        		"Filtered by status",
+                analysis.filterByStatus(service.getTaskList(), status)
+        	);
     }
 
 
@@ -119,13 +148,21 @@ public class TaskController {
     //            SORTING            //
     //===============================//
     @GetMapping("/tasks/sort/deadline")
-    public List<Task> sortByDeadline() {
-        return analysis.sortByDeadline(service.getTaskList());
+    public ApiResponse<List<Task>> sortByDeadline() {
+        return new ApiResponse<>(
+        		true, 
+        		"Sorted by deadline",
+                analysis.sortByDeadline(service.getTaskList())
+        	);
     }
 
     @GetMapping("/tasks/sort/priority")
-    public List<Task> sortByPriority() {
-        return analysis.sortByPriority(service.getTaskList());
+    public ApiResponse<List<Task>> sortByPriority() {
+        return new ApiResponse<>(
+        		true, 
+        		"Sorted by priority",
+                analysis.sortByPriority(service.getTaskList())
+        	);
     }
 
 
@@ -133,35 +170,34 @@ public class TaskController {
     //          VALIDATION           //
     //===============================//
     @GetMapping("/validate/title")
-    public Error validateTitle(@RequestParam String title) {
-        return service.validateTitle(title);
+    public ApiResponse<Error> validateTitle(@RequestParam String title) {
+        Error error = service.validateTitle(title);
+        return error == null
+                ? new ApiResponse<>(true, "Title is valid", null)
+                : new ApiResponse<>(false, error.getMessage(), error);
     }
 
     @GetMapping("/validate/subject")
-    public Error validateSubject(@RequestParam String subject) {
-        return service.validateSubject(subject);
+    public ApiResponse<Error> validateSubject(@RequestParam String subject) {
+        Error error = service.validateSubject(subject);
+        return error == null
+                ? new ApiResponse<>(true, "Subject is valid", null)
+                : new ApiResponse<>(false, error.getMessage(), error);
     }
 
     @GetMapping("/validate/description")
-    public Error validateDescription(@RequestParam String description) {
-        return service.validateDescription(description);
+    public ApiResponse<Error> validateDescription(@RequestParam String description) {
+        Error error = service.validateDescription(description);
+        return error == null
+                ? new ApiResponse<>(true, "Description is valid", null)
+                : new ApiResponse<>(false, error.getMessage(), error);
     }
 
     @GetMapping("/validate/difficulty")
-    public Error validateDifficulty(@RequestParam Integer difficulty) {
-        return service.validateDifficulty(difficulty);
-    }
-
-
-    //===============================//
-    //         REQUEST BODIES        //
-    //===============================//
-    static class TaskRequest {
-        public String title;
-        public String subject;
-        public String description;
-        public String deadline;
-        public Integer difficulty;
-        public Status status;
+    public ApiResponse<Error> validateDifficulty(@RequestParam Integer difficulty) {
+        Error error = service.validateDifficulty(difficulty);
+        return error == null
+                ? new ApiResponse<>(true, "Difficulty is valid", null)
+                : new ApiResponse<>(false, error.getMessage(), error);
     }
 }
