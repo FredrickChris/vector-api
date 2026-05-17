@@ -27,11 +27,14 @@ public class AnalysisService {
 	}
 	
 	
-	public ArrayList<Task> filterByDays(ArrayList<Task> tasks, Integer days) {
+	public ArrayList<Task> filterByDays(ArrayList<Task> tasks, Integer min, Integer max) {
 		ArrayList<Task> filtered = new ArrayList<>();
 		for(Task task: tasks) {
-			if(task.getDeadline() != null && LocalDate.now().until(task.getDeadline(), ChronoUnit.DAYS) <= days) {
-				filtered.add(task);
+			if(task.getDeadline() != null) {
+				long deadline = LocalDate.now().until(task.getDeadline(), ChronoUnit.DAYS);
+				if (deadline >= min && deadline <= max) {
+					filtered.add(task);
+				}
 			}
 		}
 		return filtered;

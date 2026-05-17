@@ -15,7 +15,7 @@ import java.time.LocalDate;
 
 @RestController
 public class TaskController {
-	//test
+	
     //===============================//
     //         INITIALIZATION        //
     //===============================//
@@ -114,17 +114,16 @@ public class TaskController {
         return new ApiResponse<>(
         		true, 
         		"Filtered by date",
-                analysis.filterByDate(service.getTaskList(), date != null ? LocalDate.parse(date) : null
-                	)
+                analysis.filterByDate(service.getTaskList(), date != null ? LocalDate.parse(date) : null)
         	);
     }
 
     @GetMapping("/tasks/filter/days")
-    public ApiResponse<List<Task>> filterByDays(@RequestParam Integer days) {
+    public ApiResponse<List<Task>> filterByDays(@RequestParam Integer min, @RequestParam  Integer max) {
         return new ApiResponse<>(
         		true, 
         		"Filtered by days",
-                analysis.filterByDays(service.getTaskList(), days)
+                analysis.filterByDays(service.getTaskList(), min, max)
         	);
     }
 
