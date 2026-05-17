@@ -102,7 +102,9 @@ com.engalladofc.vector
   - Task.java
   - Status.java
   - Error.java
-  - ViewResult.java
+- dto
+  - ApiResponse.java
+  - TaskRequest.java
 
 ---
 
