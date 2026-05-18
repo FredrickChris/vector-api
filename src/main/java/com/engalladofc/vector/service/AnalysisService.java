@@ -32,7 +32,13 @@ public class AnalysisService {
 		for(Task task: tasks) {
 			if(task.getDeadline() != null) {
 				long deadline = LocalDate.now().until(task.getDeadline(), ChronoUnit.DAYS);
-				if (deadline >= min && deadline <= max) {
+				if (min != null && max != null && deadline >= min && deadline <= max) {
+					filtered.add(task);
+				}
+				else if(min == null && max != null && deadline <= max) {
+					filtered.add(task);
+				}
+				else if(min != null && max == null && deadline >= min) {
 					filtered.add(task);
 				}
 			}
