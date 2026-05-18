@@ -18,8 +18,8 @@ public class AnalysisService {
     //===============================//
     //            SEARCH             //
     //===============================//
-	public ArrayList<Task> search(ArrayList<Task> tasks, LocalDate minDate, LocalDate maxDate, Integer minDiff, Integer maxDiff, Status status, SortField type, SortOrder order) {
-		return sort(filter(tasks, minDate, maxDate, minDiff, maxDiff, status), type, order);
+	public ArrayList<Task> search(ArrayList<Task> tasks, LocalDate minDate, LocalDate maxDate, Integer minDiff, Integer maxDiff, Status status, SortField field, SortOrder order) {
+		return sort(filter(tasks, minDate, maxDate, minDiff, maxDiff, status), field, order);
 	}
 	
 	
@@ -98,11 +98,11 @@ public class AnalysisService {
     //===============================//
     //            SORTING            //
     //===============================//
-	private ArrayList<Task> sort(ArrayList<Task> tasks, SortField type, SortOrder order){
+	private ArrayList<Task> sort(ArrayList<Task> tasks, SortField field, SortOrder order){
 
 		ArrayList<Task> sorted = new ArrayList<>(tasks);
 		
-		switch(type) {
+		switch(field) {
 		case DEADLINE:
 			sorted = sortByDeadline(sorted, order);
 			break;
