@@ -9,6 +9,7 @@ import com.engalladofc.vector.model.SortOrder;
 
 
 import java.util.ArrayList;
+import java.util.List;
 import java.time.LocalDate;	
 import java.time.temporal.ChronoUnit;
 
@@ -18,7 +19,7 @@ public class AnalysisService {
     //===============================//
     //            SEARCH             //
     //===============================//
-	public ArrayList<Task> search(ArrayList<Task> tasks, LocalDate minDate, LocalDate maxDate, Integer minDiff, Integer maxDiff, Status status, SortField field, SortOrder order) {
+	public List<Task> search(ArrayList<Task> tasks, LocalDate minDate, LocalDate maxDate, Integer minDiff, Integer maxDiff, Status status, SortField field, SortOrder order) {
 		return sort(filter(tasks, minDate, maxDate, minDiff, maxDiff, status), field, order);
 	}
 	

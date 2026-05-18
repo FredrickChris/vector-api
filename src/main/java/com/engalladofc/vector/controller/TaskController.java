@@ -5,6 +5,8 @@ import org.springframework.web.bind.annotation.*;
 import com.engalladofc.vector.model.Task;
 import com.engalladofc.vector.model.Error;
 import com.engalladofc.vector.model.Status;
+import com.engalladofc.vector.model.SortField;
+import com.engalladofc.vector.model.SortOrder;
 import com.engalladofc.vector.dto.ApiResponse;
 import com.engalladofc.vector.dto.TaskRequest;
 import com.engalladofc.vector.service.TaskService;
@@ -134,112 +136,41 @@ public class TaskController {
 
 
     //===============================//
-    //           FILTERING           //
+    //           SEARCHING           //
     //===============================//
-    @GetMapping("/tasks/filter/date")
-    public ApiResponse<List<Task>> filterByDate(@RequestParam List<Task> tasks, @RequestParam(required = false) String date) {
+    @GetMapping("/tasks/sort")
+    public ApiResponse<List<Task>> sortTasks(
+            @RequestParam(required = false) String stringMinDate,
+            @RequestParam(required = false) String stringMaxDate,
+            @RequestParam(required = false) Status status,
+            @RequestParam(defaultValue = "PRIORITY") SortField field,
+            @RequestParam(defaultValue = "ASC") SortOrder order,
+            @RequestParam(defaultValue = "1") Integer minDiff,
+            @RequestParam(defaultValue = "5") Integer maxDiff
+    	) {
     	try {
-	    	LocalDate deadline = date != null ? LocalDate.parse(date) : null;
-	    	List<Task> dateFiltered = analysis.filterByDate(new ArrayList<>(tasks), deadline);
+    		LocalDate minDate = stringMinDate != null ? LocalDate.parse(stringMinDate) : null;
+    		LocalDate maxDate = stringMaxDate != null ? LocalDate.parse(stringMaxDate) : null;
 	        return new ApiResponse<>(
 	        		true, 
-	        		List.of("Filtered by date"),
-	                dateFiltered
+	        		List.of("Tasks Searched"), 
+	        		analysis.search(
+	        				service.getTaskList(), 
+	        				minDate, 
+	        				maxDate, 
+	        				minDiff, 
+	        				maxDiff, 
+	        				status, 
+	        				field, 
+	        				order
+	        			)
 	        	);
-    	} catch (DateTimeParseException e) {
-            return new ApiResponse<>(false, List.of("Invalid Date / Format: YYYY-MM-DD"), new ArrayList<>());
+    	} catch(DateTimeParseException e) {
+    		return new ApiResponse<>(
+	        		true, 
+	        		List.of("Tasks Searched"), 
+	        		null
+	        	);
     	}
-    }
-
-    
-    @GetMapping("/tasks/filter/days")
-    public ApiResponse<List<Task>> filterByDays(@RequestParam List<Task> tasks, @RequestParam(required = false) Integer min, @RequestParam(required = false)  Integer max) {
-
-        List<String> messages = new ArrayList<>();
-        
-        if (min != null && max != null && min > max) {
-            messages.add("Minimum cannot be greater than maximum difficulty");
-        }
-
-        boolean isValid = messages.isEmpty();
-        
-        if(!isValid) {
-            return new ApiResponse<>(false, messages, new ArrayList<>());
-        }
-        
-        List<Task> daysFiltered = analysis.filterByDays(new ArrayList<>(tasks), min, max);
-        
-        return new ApiResponse<>(
-        		true, 
-        		List.of("Filtered by days"), 
-                daysFiltered
-        );
-    }
-
-    
-    @GetMapping("/tasks/filter/difficulty")
-    public ApiResponse<List<Task>> filterByDifficulty(@RequestParam List<Task> tasks, @RequestParam(defaultValue = "1") Integer min, @RequestParam(defaultValue = "5") Integer max) {
-
-        List<String> messages = new ArrayList<>();
-
-        Error minError = service.validateDifficulty(min);
-        if (minError != null) {
-            messages.add("Minimum difficulty: " + minError.getMessage());
-        }
-
-        Error maxError = service.validateDifficulty(max);
-        if (maxError != null) {
-            messages.add("Maximum difficulty: " + maxError.getMessage());
-        }
-
-        if (min != null && max != null && min > max) {
-            messages.add("Minimum cannot be greater than maximum difficulty");
-        }
-
-        boolean isValid = messages.isEmpty();
-
-        if (!isValid) {
-            return new ApiResponse<>(false, messages, new ArrayList<>());
-        }
-
-        List<Task> difficultyFiltered = analysis.filterByDifficulty(new ArrayList<>(tasks), min, max);
-
-        return new ApiResponse<>(
-                true,
-                List.of("Filtered by difficulty"),
-                difficultyFiltered
-        );
-    }
-
-    @GetMapping("/tasks/filter/status")
-    public ApiResponse<List<Task>> filterByStatus(@RequestParam List<Task> tasks, @RequestParam Status status) {
-    	List<Task> statusFiltered = analysis.filterByStatus(new ArrayList<>(tasks), status);
-        return new ApiResponse<>(
-        		true, 
-        		List.of("Filtered by status"), 
-        		statusFiltered
-        	);
-    }
-
-
-    //===============================//
-    //            SORTING            //
-    //===============================//
-    @GetMapping("/tasks/sort/deadline")
-    public ApiResponse<List<Task>> sortByDeadline(@RequestParam List<Task> tasks) {
-        return new ApiResponse<>(
-        		true, 
-        		List.of("Sorted by deadline"),
-                analysis.sortByDeadline(new ArrayList<>(tasks))
-        	);
-    }
-
-    @GetMapping("/tasks/sort/priority")
-    public ApiResponse<List<Task>> sortByPriority(@RequestParam List<Task> tasks) {
-        return new ApiResponse<>(
-        		true, 
-        		List.of("Sorted by priority"),
-                analysis.sortByPriority(new ArrayList<>(tasks))
-        	);
-    }
+	}
 }
