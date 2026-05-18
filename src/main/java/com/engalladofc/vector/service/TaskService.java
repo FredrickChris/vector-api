@@ -61,7 +61,7 @@ public class TaskService {
     }
 
     public Error validateDifficulty(Integer difficulty) {
-        if (difficulty > 5 || difficulty < 1) {
+        if (difficulty == null || difficulty > 5 || difficulty < 1) {
             return Error.DIFFICULTY;
         }
         return null;
