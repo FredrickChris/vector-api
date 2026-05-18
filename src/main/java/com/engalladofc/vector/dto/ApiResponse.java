@@ -1,13 +1,15 @@
 package com.engalladofc.vector.dto;
 
+import java.util.List;
+
 public class ApiResponse<T> {
     private boolean success;
-    private String message;
+    private List<String> messages;
     private T data;
 
-    public ApiResponse(boolean success, String message, T data) {
+    public ApiResponse(boolean success, List<String> messages, T data) {
         this.success = success;
-        this.message = message;
+        this.messages = messages;
         this.data = data;
     }
 
@@ -15,8 +17,8 @@ public class ApiResponse<T> {
     	return success; 
     }
     
-    public String getMessage() { 
-    	return message; 
+    public List<String> getMessages() { 
+    	return messages; 
     }
     
     public T getData() { 
