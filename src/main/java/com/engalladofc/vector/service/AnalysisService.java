@@ -28,7 +28,7 @@ public class AnalysisService {
     //           FILTERING           //
     //===============================//
 	
-	public ArrayList<Task> filter(ArrayList<Task> tasks, LocalDate minDate, LocalDate maxDate, Integer minDiff, Integer maxDiff, Status status) {
+	private ArrayList<Task> filter(ArrayList<Task> tasks, LocalDate minDate, LocalDate maxDate, Integer minDiff, Integer maxDiff, Status status) {
 		
 		ArrayList<Task> filtered = new ArrayList<>(tasks);
 		
@@ -39,7 +39,7 @@ public class AnalysisService {
 		return filtered;
 	}
 	
-	public ArrayList<Task> filterByDate(ArrayList<Task> tasks, LocalDate minDate, LocalDate maxDate) {
+	private ArrayList<Task> filterByDate(ArrayList<Task> tasks, LocalDate minDate, LocalDate maxDate) {
 
 		if(minDate == null && maxDate ==null) {
 			return new ArrayList<>(tasks);
@@ -66,7 +66,7 @@ public class AnalysisService {
 	}
 	
 	
-	public ArrayList<Task> filterByDifficulty(ArrayList<Task> tasks, Integer minDiff, Integer maxDiff) {
+	private ArrayList<Task> filterByDifficulty(ArrayList<Task> tasks, Integer minDiff, Integer maxDiff) {
 		ArrayList<Task> filtered = new ArrayList<>();
 		for(Task task: tasks) {
 			Integer difficulty = task.getDifficulty();
@@ -78,7 +78,7 @@ public class AnalysisService {
 	}
 	
 	
-	public ArrayList<Task> filterByStatus(ArrayList<Task> tasks, Status status) {
+	private ArrayList<Task> filterByStatus(ArrayList<Task> tasks, Status status) {
 		
 		if (status == null) {
 		    return new ArrayList<>(tasks);
@@ -98,7 +98,7 @@ public class AnalysisService {
     //===============================//
     //            SORTING            //
     //===============================//
-	public ArrayList<Task> sort(ArrayList<Task> tasks, SortField type, SortOrder order){
+	private ArrayList<Task> sort(ArrayList<Task> tasks, SortField type, SortOrder order){
 
 		ArrayList<Task> sorted = new ArrayList<>(tasks);
 		
@@ -115,7 +115,7 @@ public class AnalysisService {
 		return sorted;
 	}
 	
-	public ArrayList<Task> sortByDeadline(ArrayList<Task> tasks, SortOrder order) {
+	private ArrayList<Task> sortByDeadline(ArrayList<Task> tasks, SortOrder order) {
 		ArrayList<Task> sorted = new ArrayList<>(tasks);
 
 		sorted.sort((a, b) -> {
@@ -141,7 +141,7 @@ public class AnalysisService {
 	}
 
 
-	public ArrayList<Task> sortByPriority(ArrayList<Task> tasks, SortOrder order) {
+	private ArrayList<Task> sortByPriority(ArrayList<Task> tasks, SortOrder order) {
 		ArrayList<Task> sorted = new ArrayList<>(tasks);
 	
 		sorted.sort((a, b) -> {
