@@ -11,7 +11,9 @@ import com.engalladofc.vector.service.TaskService;
 import com.engalladofc.vector.service.AnalysisService;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 
 @RestController
 public class TaskController {
@@ -34,7 +36,12 @@ public class TaskController {
     @GetMapping("/tasks")
     public ApiResponse<List<Task>> getTasks() {
         service.readTasks();
-        return new ApiResponse<>(true, "Tasks fetched", service.getTaskList());
+        
+        return new ApiResponse<>(
+        		true, 
+        		List.of("Tasks fetched"), 
+        		service.getTaskList()
+        	);
     }
 
 
@@ -51,8 +58,14 @@ public class TaskController {
                 body.difficulty, 
                 body.status
         	);
+        
         service.saveTasks();
-        return new ApiResponse<>(true, "Task created", null);
+        
+        return new ApiResponse<>(
+        		true, 
+        		List.of("Task created"), 
+        		null
+        	);
     }
 
 
@@ -70,8 +83,14 @@ public class TaskController {
                 body.difficulty, 
                 body.status
         	);
+        
         service.saveTasks();
-        return new ApiResponse<>(true, "Task updated", null);
+        
+        return new ApiResponse<>(
+        		true, 
+        		List.of("Task updated"), 
+        		null
+        	);
     }
 
 
@@ -82,7 +101,11 @@ public class TaskController {
     public ApiResponse<Void> deleteTask(@PathVariable int id) {
         service.deleteTask(id);
         service.saveTasks();
-        return new ApiResponse<>(true, "Task deleted", null);
+        return new ApiResponse<>(
+        		true, 
+        		List.of("Task deleted"), 
+        		null
+        	);
     }
 
 
@@ -92,7 +115,11 @@ public class TaskController {
     @PostMapping("/tasks/save")
     public ApiResponse<Void> saveTasks() {
         service.saveTasks();
-        return new ApiResponse<>(true, "Tasks saved", null);
+        return new ApiResponse<>(
+        		true, 
+        		List.of("Tasks saved"), 
+        		null
+        	);
     }
 
     @PostMapping("/tasks/read")
@@ -100,7 +127,7 @@ public class TaskController {
         service.readTasks();
         return new ApiResponse<>(
         		true, 
-        		"Tasks loaded", 
+        		List.of("Tasks loaded"), 
         		null
         	);
     }
@@ -111,37 +138,86 @@ public class TaskController {
     //===============================//
     @GetMapping("/tasks/filter/date")
     public ApiResponse<List<Task>> filterByDate(@RequestParam(required = false) String date) {
-        return new ApiResponse<>(
-        		true, 
-        		"Filtered by date",
-                analysis.filterByDate(service.getTaskList(), date != null ? LocalDate.parse(date) : null)
-        	);
+    	try {
+	    	LocalDate deadline = date != null ? LocalDate.parse(date) : null;
+	    	List<Task> dateFiltered = analysis.filterByDate(service.getTaskList(), deadline);
+	        return new ApiResponse<>(
+	        		true, 
+	        		List.of("Filtered by date"),
+	                dateFiltered
+	        	);
+    	} catch (DateTimeParseException e) {
+            return new ApiResponse<>(false, List.of("Invalid Date / Format: YYYY-MM-DD"), new ArrayList<>());
+    	}
     }
 
+    
     @GetMapping("/tasks/filter/days")
-    public ApiResponse<List<Task>> filterByDays(@RequestParam Integer min, @RequestParam  Integer max) {
+    public ApiResponse<List<Task>> filterByDays(@RequestParam(required = false) Integer min, @RequestParam(required = false)  Integer max) {
+
+        List<String> messages = new ArrayList<>();
+        
+        if (min != null && max != null && min > max) {
+            messages.add("Minimum cannot be greater than maximum difficulty");
+        }
+
+        boolean isValid = messages.isEmpty();
+        
+        if(!isValid) {
+            return new ApiResponse<>(false, messages, new ArrayList<>());
+        }
+        
+        List<Task> daysFiltered = analysis.filterByDays(service.getTaskList(), min, max);
+        
         return new ApiResponse<>(
         		true, 
-        		"Filtered by days",
-                analysis.filterByDays(service.getTaskList(), min, max)
-        	);
+        		List.of("Filtered by days"), 
+                daysFiltered
+        );
     }
 
+    
     @GetMapping("/tasks/filter/difficulty")
-    public ApiResponse<List<Task>> filterByDifficulty(@RequestParam Integer min, @RequestParam Integer max) {
+    public ApiResponse<List<Task>> filterByDifficulty(@RequestParam(defaultValue = "1") Integer min, @RequestParam(defaultValue = "5") Integer max) {
+
+        List<String> messages = new ArrayList<>();
+
+        Error minError = service.validateDifficulty(min);
+        if (minError != null) {
+            messages.add("Minimum difficulty: " + minError.getMessage());
+        }
+
+        Error maxError = service.validateDifficulty(max);
+        if (maxError != null) {
+            messages.add("Maximum difficulty: " + maxError.getMessage());
+        }
+
+        if (min != null && max != null && min > max) {
+            messages.add("Minimum cannot be greater than maximum difficulty");
+        }
+
+        boolean isValid = messages.isEmpty();
+
+        if (!isValid) {
+            return new ApiResponse<>(false, messages, new ArrayList<>());
+        }
+
+        List<Task> difficultyFiltered = analysis.filterByDifficulty(service.getTaskList(), min, max);
+
         return new ApiResponse<>(
-        		true, 
-        		"Filtered by difficulty",
-                analysis.filterByDifficulty(service.getTaskList(), min, max)
-        	);
+                true,
+                List.of("Filtered by difficulty"),
+                difficultyFiltered
+        );
     }
 
     @GetMapping("/tasks/filter/status")
     public ApiResponse<List<Task>> filterByStatus(@RequestParam Status status) {
+    	List<Task> statusFiltered = analysis.filterByStatus(service.getTaskList(), status);
         return new ApiResponse<>(
         		true, 
-        		"Filtered by status",
-                analysis.filterByStatus(service.getTaskList(), status)
+        		List.of("Filtered by status"), 
+        		statusFiltered
         	);
     }
 
@@ -153,7 +229,7 @@ public class TaskController {
     public ApiResponse<List<Task>> sortByDeadline() {
         return new ApiResponse<>(
         		true, 
-        		"Sorted by deadline",
+        		List.of("Sorted by deadline"),
                 analysis.sortByDeadline(service.getTaskList())
         	);
     }
@@ -162,44 +238,8 @@ public class TaskController {
     public ApiResponse<List<Task>> sortByPriority() {
         return new ApiResponse<>(
         		true, 
-        		"Sorted by priority",
+        		List.of("Sorted by priority"),
                 analysis.sortByPriority(service.getTaskList())
         	);
-    }
-
-
-    //===============================//
-    //          VALIDATION           //
-    //===============================//
-    @GetMapping("/validate/title")
-    public ApiResponse<Error> validateTitle(@RequestParam String title) {
-        Error error = service.validateTitle(title);
-        return error == null
-                ? new ApiResponse<>(true, "Title is valid", null)
-                : new ApiResponse<>(false, error.getMessage(), error);
-    }
-
-    @GetMapping("/validate/subject")
-    public ApiResponse<Error> validateSubject(@RequestParam String subject) {
-        Error error = service.validateSubject(subject);
-        return error == null
-                ? new ApiResponse<>(true, "Subject is valid", null)
-                : new ApiResponse<>(false, error.getMessage(), error);
-    }
-
-    @GetMapping("/validate/description")
-    public ApiResponse<Error> validateDescription(@RequestParam String description) {
-        Error error = service.validateDescription(description);
-        return error == null
-                ? new ApiResponse<>(true, "Description is valid", null)
-                : new ApiResponse<>(false, error.getMessage(), error);
-    }
-
-    @GetMapping("/validate/difficulty")
-    public ApiResponse<Error> validateDifficulty(@RequestParam Integer difficulty) {
-        Error error = service.validateDifficulty(difficulty);
-        return error == null
-                ? new ApiResponse<>(true, "Difficulty is valid", null)
-                : new ApiResponse<>(false, error.getMessage(), error);
     }
 }
