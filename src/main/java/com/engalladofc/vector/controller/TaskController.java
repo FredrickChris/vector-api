@@ -137,10 +137,10 @@ public class TaskController {
     //           FILTERING           //
     //===============================//
     @GetMapping("/tasks/filter/date")
-    public ApiResponse<List<Task>> filterByDate(@RequestParam(required = false) String date) {
+    public ApiResponse<List<Task>> filterByDate(@RequestParam List<Task> tasks, @RequestParam(required = false) String date) {
     	try {
 	    	LocalDate deadline = date != null ? LocalDate.parse(date) : null;
-	    	List<Task> dateFiltered = analysis.filterByDate(service.getTaskList(), deadline);
+	    	List<Task> dateFiltered = analysis.filterByDate(new ArrayList<>(tasks), deadline);
 	        return new ApiResponse<>(
 	        		true, 
 	        		List.of("Filtered by date"),
@@ -153,7 +153,7 @@ public class TaskController {
 
     
     @GetMapping("/tasks/filter/days")
-    public ApiResponse<List<Task>> filterByDays(@RequestParam(required = false) Integer min, @RequestParam(required = false)  Integer max) {
+    public ApiResponse<List<Task>> filterByDays(@RequestParam List<Task> tasks, @RequestParam(required = false) Integer min, @RequestParam(required = false)  Integer max) {
 
         List<String> messages = new ArrayList<>();
         
@@ -167,7 +167,7 @@ public class TaskController {
             return new ApiResponse<>(false, messages, new ArrayList<>());
         }
         
-        List<Task> daysFiltered = analysis.filterByDays(service.getTaskList(), min, max);
+        List<Task> daysFiltered = analysis.filterByDays(new ArrayList<>(tasks), min, max);
         
         return new ApiResponse<>(
         		true, 
@@ -178,7 +178,7 @@ public class TaskController {
 
     
     @GetMapping("/tasks/filter/difficulty")
-    public ApiResponse<List<Task>> filterByDifficulty(@RequestParam(defaultValue = "1") Integer min, @RequestParam(defaultValue = "5") Integer max) {
+    public ApiResponse<List<Task>> filterByDifficulty(@RequestParam List<Task> tasks, @RequestParam(defaultValue = "1") Integer min, @RequestParam(defaultValue = "5") Integer max) {
 
         List<String> messages = new ArrayList<>();
 
@@ -202,7 +202,7 @@ public class TaskController {
             return new ApiResponse<>(false, messages, new ArrayList<>());
         }
 
-        List<Task> difficultyFiltered = analysis.filterByDifficulty(service.getTaskList(), min, max);
+        List<Task> difficultyFiltered = analysis.filterByDifficulty(new ArrayList<>(tasks), min, max);
 
         return new ApiResponse<>(
                 true,
@@ -212,8 +212,8 @@ public class TaskController {
     }
 
     @GetMapping("/tasks/filter/status")
-    public ApiResponse<List<Task>> filterByStatus(@RequestParam Status status) {
-    	List<Task> statusFiltered = analysis.filterByStatus(service.getTaskList(), status);
+    public ApiResponse<List<Task>> filterByStatus(@RequestParam List<Task> tasks, @RequestParam Status status) {
+    	List<Task> statusFiltered = analysis.filterByStatus(new ArrayList<>(tasks), status);
         return new ApiResponse<>(
         		true, 
         		List.of("Filtered by status"), 
@@ -226,20 +226,20 @@ public class TaskController {
     //            SORTING            //
     //===============================//
     @GetMapping("/tasks/sort/deadline")
-    public ApiResponse<List<Task>> sortByDeadline() {
+    public ApiResponse<List<Task>> sortByDeadline(@RequestParam List<Task> tasks) {
         return new ApiResponse<>(
         		true, 
         		List.of("Sorted by deadline"),
-                analysis.sortByDeadline(service.getTaskList())
+                analysis.sortByDeadline(new ArrayList<>(tasks))
         	);
     }
 
     @GetMapping("/tasks/sort/priority")
-    public ApiResponse<List<Task>> sortByPriority() {
+    public ApiResponse<List<Task>> sortByPriority(@RequestParam List<Task> tasks) {
         return new ApiResponse<>(
         		true, 
         		List.of("Sorted by priority"),
-                analysis.sortByPriority(service.getTaskList())
+                analysis.sortByPriority(new ArrayList<>(tasks))
         	);
     }
 }
