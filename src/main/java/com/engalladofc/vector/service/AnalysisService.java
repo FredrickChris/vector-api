@@ -4,6 +4,8 @@ import org.springframework.stereotype.Service;
 
 import com.engalladofc.vector.model.Task;
 import com.engalladofc.vector.model.Status;
+import com.engalladofc.vector.model.SortField;
+import com.engalladofc.vector.model.SortOrder;
 
 
 import java.util.ArrayList;
@@ -14,31 +16,48 @@ import java.time.temporal.ChronoUnit;
 public class AnalysisService {
 	
     //===============================//
-    //           FILTERING           //
+    //            SEARCH             //
     //===============================//
-	public ArrayList<Task> filterByDate(ArrayList<Task> tasks, LocalDate date) {
-		ArrayList<Task> filtered = new ArrayList<>();
-		for(Task task: tasks) {
-			if(task.getDeadline() == date) {
-				filtered.add(task);
-			}
-		}
-		return filtered;
+	public ArrayList<Task> search(ArrayList<Task> tasks, LocalDate minDate, LocalDate maxDate, Integer minDiff, Integer maxDiff, Status status, SortField type, SortOrder order) {
+		return sort(filter(tasks, minDate, maxDate, minDiff, maxDiff, status), type, order);
 	}
 	
 	
-	public ArrayList<Task> filterByDays(ArrayList<Task> tasks, Integer min, Integer max) {
+	
+    //===============================//
+    //           FILTERING           //
+    //===============================//
+	
+	public ArrayList<Task> filter(ArrayList<Task> tasks, LocalDate minDate, LocalDate maxDate, Integer minDiff, Integer maxDiff, Status status) {
+		
+		ArrayList<Task> filtered = new ArrayList<>(tasks);
+		
+		filtered = filterByDate(filtered, minDate, maxDate);
+		filtered = filterByDifficulty(filtered, minDiff, maxDiff);
+		filtered = filterByStatus(filtered, status);
+		
+		return filtered;
+	}
+	
+	public ArrayList<Task> filterByDate(ArrayList<Task> tasks, LocalDate minDate, LocalDate maxDate) {
+
+		if(minDate == null && maxDate ==null) {
+			return new ArrayList<>(tasks);
+		}
+		
 		ArrayList<Task> filtered = new ArrayList<>();
+		Integer minDays = minDate != null ? Math.toIntExact(LocalDate.now().until(minDate, ChronoUnit.DAYS)): null;
+		Integer maxDays = maxDate != null ? Math.toIntExact(LocalDate.now().until(maxDate, ChronoUnit.DAYS)): null;
 		for(Task task: tasks) {
 			if(task.getDeadline() != null) {
 				long deadline = LocalDate.now().until(task.getDeadline(), ChronoUnit.DAYS);
-				if (min != null && max != null && deadline >= min && deadline <= max) {
+				if (minDays != null && maxDays != null && deadline >= minDays && deadline <= maxDays) {
 					filtered.add(task);
 				}
-				else if(min == null && max != null && deadline <= max) {
+				else if(minDays == null && maxDays != null && deadline <= maxDays) {
 					filtered.add(task);
 				}
-				else if(min != null && max == null && deadline >= min) {
+				else if(minDays != null && maxDays == null && deadline >= minDays) {
 					filtered.add(task);
 				}
 			}
@@ -47,11 +66,11 @@ public class AnalysisService {
 	}
 	
 	
-	public ArrayList<Task> filterByDifficulty(ArrayList<Task> tasks, Integer min, Integer max) {
+	public ArrayList<Task> filterByDifficulty(ArrayList<Task> tasks, Integer minDiff, Integer maxDiff) {
 		ArrayList<Task> filtered = new ArrayList<>();
 		for(Task task: tasks) {
 			Integer difficulty = task.getDifficulty();
-			if(difficulty != null && difficulty >= min && difficulty <= max) {
+			if(difficulty != null && difficulty >= minDiff && difficulty <= maxDiff) {
 				filtered.add(task);
 			}
 		}
@@ -60,6 +79,11 @@ public class AnalysisService {
 	
 	
 	public ArrayList<Task> filterByStatus(ArrayList<Task> tasks, Status status) {
+		
+		if (status == null) {
+		    return new ArrayList<>(tasks);
+		}
+		
 		ArrayList<Task> filtered = new ArrayList<>();
 		for(Task task: tasks) {
 			if(task.getStatus() == status) {
@@ -70,43 +94,64 @@ public class AnalysisService {
 	}
 	
 	
+	
     //===============================//
     //            SORTING            //
     //===============================//
-	public ArrayList<Task> sortByDeadline(ArrayList<Task> tasks) {
-	    ArrayList<Task> sorted = new ArrayList<>(tasks);
-	    
-	    sorted.sort((a, b) -> {
-	    	
-	        LocalDate da = a.getDeadline();
-	        LocalDate db = b.getDeadline();
-	        Integer difa = a.getDifficulty();
-	        Integer difb = b.getDifficulty();
+	public ArrayList<Task> sort(ArrayList<Task> tasks, SortField type, SortOrder order){
 
-	        if (da != null && db != null) return da.compareTo(db);
-	        if (da != null) return -1;
-	        if (db != null) return 1;
-
-	        if (difa != null && difb != null) return difb.compareTo(difa);
-	        if (difa != null) return -1;
-	        if (difb != null) return 1;
-
-	        return 0;
-	    });
-	    return sorted;
+		ArrayList<Task> sorted = new ArrayList<>(tasks);
+		
+		switch(type) {
+		case DEADLINE:
+			sorted = sortByDeadline(sorted, order);
+			break;
+			
+		case PRIORITY:
+			sorted = sortByPriority(sorted, order);
+			break;
+		}
+		
+		return sorted;
 	}
 	
+	public ArrayList<Task> sortByDeadline(ArrayList<Task> tasks, SortOrder order) {
+		ArrayList<Task> sorted = new ArrayList<>(tasks);
+
+		sorted.sort((a, b) -> {
+			LocalDate da = a.getDeadline();
+			LocalDate db = b.getDeadline();
+			Integer difa = a.getDifficulty();
+			Integer difb = b.getDifficulty();
 	
-	public ArrayList<Task> sortByPriority(ArrayList<Task> tasks) {
-	    ArrayList<Task> sorted = new ArrayList<>(tasks);
-	    
-	    sorted.sort((a, b) -> {
-	        double scoreA = calculatePriority(a);
-	        double scoreB = calculatePriority(b);
-	        return Double.compare(scoreB, scoreA); // highest score first
-	    });
-	    
-	    return sorted;
+			int result;
+
+			if (da != null && db != null) result = da.compareTo(db);
+			else if (da != null) result = -1;
+			else if (db != null) result = 1;
+			else if (difa != null && difb != null) result = difb.compareTo(difa);
+			else if (difa != null) result = -1;
+			else if (difb != null) result = 1;
+			else result = 0;
+		
+			return order == SortOrder.DESCENDING ? -result : result;
+		});
+
+	return sorted;
+	}
+
+
+	public ArrayList<Task> sortByPriority(ArrayList<Task> tasks, SortOrder order) {
+		ArrayList<Task> sorted = new ArrayList<>(tasks);
+	
+		sorted.sort((a, b) -> {
+			double scoreA = calculatePriority(a);
+			double scoreB = calculatePriority(b);
+			int result = Double.compare(scoreA, scoreB);
+			return order == SortOrder.DESCENDING ? -result : result;
+		});
+		
+		return sorted;
 	}
     
     
