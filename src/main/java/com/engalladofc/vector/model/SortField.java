@@ -1,6 +1,6 @@
 package com.engalladofc.vector.model;
 
-public enum SortType {
+public enum SortField {
     DEADLINE,
     PRIORITY
 }
