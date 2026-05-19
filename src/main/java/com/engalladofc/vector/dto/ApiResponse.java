@@ -13,15 +13,7 @@ public class ApiResponse<T> {
         this.data = data;
     }
 
-    public boolean isSuccess() { 
-    	return success; 
-    }
-    
-    public List<String> getMessages() { 
-    	return messages; 
-    }
-    
-    public T getData() { 
-    	return data; 
-    }
+    public boolean isSuccess() { return success; }
+    public List<String> getMessages() { return messages; }
+    public T getData() { return data; }
 }
