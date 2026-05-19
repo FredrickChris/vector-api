@@ -3,12 +3,14 @@ package com.engalladofc.vector.service;
 import org.springframework.stereotype.Service;
 
 import com.engalladofc.vector.model.Task;
-import com.engalladofc.vector.model.Error;
 import com.engalladofc.vector.model.Status;
+import com.engalladofc.vector.dto.SearchValidationResult;
 import com.engalladofc.vector.repository.TaskRepository;
 
+import java.util.List;
 import java.util.ArrayList;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 
 @Service
 public class TaskService {
@@ -33,45 +35,67 @@ public class TaskService {
     
     
     //===============================//
-    //        TASK VALDIATION        //
+    //        TASK VALIDATION        //
     //===============================//
-    public Error validateTitle(String title) {
+    public SearchValidationResult validateSearch(String stringMinDate, String stringMaxDate, Integer minDiff, Integer maxDiff) {
+    	List<String> errors = new ArrayList<>();
+
+    	LocalDate minDate = validateDeadline(errors, stringMinDate, "Earliest Deadline");
+    	LocalDate maxDate = validateDeadline(errors, stringMaxDate, "Latest Deadline");
+    	validateDifficulty(errors, minDiff, "Minimum Difficulty");
+    	validateDifficulty(errors, maxDiff, "Maximum Difficulty");
+    	
+    	return new SearchValidationResult(
+    			errors,
+    			minDate,
+    			maxDate,
+    			minDiff,
+    			maxDiff
+    		);
+    }
+    
+    private void validateTitle(List<String> errors, String title) {
         if (title == null || title.isBlank()) {
-            return Error.TITLE;
+        	errors.add("Title cannot be Empty");
         }
-        return null;
     }
 
-    public Error validateSubject(String subject) {
+    private void validateSubject(List<String> errors, String subject) {
         if (subject == null || subject.isBlank()) {
-            return Error.SUBJECT;
+        	errors.add("Subject cannot be Empty");
         }
-        return null;
     }
 
-    public Error validateDescription(String description) {
-        if (description.length() > 300) {
-            return Error.DESCRIPTION;
+    private void validateDescription(List<String> errors, String description) {
+        if (description.length() > 150) {
+            errors.add("Description exceed 150 characters.");
         }
-        return null;
     }
 
-    public Error validateDeadline(LocalDate deadline) { //NOT USED AS OF THE MOMENT
-        return null;
+    private LocalDate validateDeadline(List<String> errors, String stringDeadline, String reference) {
+    	try {
+    		return LocalDate.parse(stringDeadline);
+    	} catch(DateTimeParseException e) {
+    		errors.add(" invalid date / format (YYYY-MM-DD)");
+    		return null;
+    	}
     }
 
-    public Error validateDifficulty(Integer difficulty) {
-        if (difficulty == null || difficulty > 5 || difficulty < 1) {
-            return Error.DIFFICULTY;
-        }
-        return null;
+    private void validateDifficulty(List<String> errors, Integer difficulty, String reference) {
+    	if (difficulty > 5) {
+    		errors.add(reference + " cannot be greater than 5");
+    	}
+    	
+    	if(difficulty < 1) {
+    		errors.add(reference + " cannot be less than 1");
+    	}
     }
     
     
     //===============================//
     //           TASK LIST           //
     //===============================//
-    public ArrayList<Task> getTaskList() {
+    public List<Task> getTaskList() {
     	return repo.getAllTasks();
     }
     
