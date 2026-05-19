@@ -3,19 +3,17 @@ package com.engalladofc.vector.controller;
 import org.springframework.web.bind.annotation.*;
 
 import com.engalladofc.vector.model.Task;
-import com.engalladofc.vector.model.Error;
 import com.engalladofc.vector.model.Status;
 import com.engalladofc.vector.model.SortField;
 import com.engalladofc.vector.model.SortOrder;
 import com.engalladofc.vector.dto.ApiResponse;
 import com.engalladofc.vector.dto.TaskRequest;
+import com.engalladofc.vector.dto.SearchValidationResult;
 import com.engalladofc.vector.service.TaskService;
 import com.engalladofc.vector.service.AnalysisService;
 
 import java.util.List;
-import java.util.ArrayList;
 import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
 
 @RestController
 public class TaskController {
@@ -138,39 +136,49 @@ public class TaskController {
     //===============================//
     //           SEARCHING           //
     //===============================//
-    @GetMapping("/tasks/sort")
+    @GetMapping("/tasks/search")
     public ApiResponse<List<Task>> sortTasks(
+            @RequestParam(required = false) String subject,
             @RequestParam(required = false) String stringMinDate,
             @RequestParam(required = false) String stringMaxDate,
             @RequestParam(required = false) Status status,
             @RequestParam(defaultValue = "PRIORITY") SortField field,
-            @RequestParam(defaultValue = "ASC") SortOrder order,
-            @RequestParam(defaultValue = "1") Integer minDiff,
-            @RequestParam(defaultValue = "5") Integer maxDiff
+            @RequestParam(defaultValue = "ASCENDING") SortOrder order,
+            @RequestParam(required = false) Integer minDiff,
+            @RequestParam(required = false) Integer maxDiff
     	) {
-    	try {
-    		LocalDate minDate = stringMinDate != null ? LocalDate.parse(stringMinDate) : null;
-    		LocalDate maxDate = stringMaxDate != null ? LocalDate.parse(stringMaxDate) : null;
-	        return new ApiResponse<>(
-	        		true, 
-	        		List.of("Tasks Searched"), 
-	        		analysis.search(
-	        				service.getTaskList(), 
-	        				minDate, 
-	        				maxDate, 
-	        				minDiff, 
-	        				maxDiff, 
-	        				status, 
-	        				field, 
-	        				order
-	        			)
-	        	);
-    	} catch(DateTimeParseException e) {
-    		return new ApiResponse<>(
-	        		true, 
-	        		List.of("Tasks Searched"), 
-	        		null
-	        	);
+    	
+    	SearchValidationResult searchResponse = service.validateSearch(stringMinDate, stringMaxDate, minDiff, maxDiff);
+    	
+    	List<String> errors = searchResponse.getErrors();
+
+    	if (!errors.isEmpty()) {
+    	    return new ApiResponse<>(
+    	        false,
+    	        errors,
+    	        null
+    	    );
     	}
+    	
+    	subject = (subject != null && !subject.isBlank()) ? subject.trim().toLowerCase() : null;
+    	
+    	LocalDate minDate = searchResponse.getMinDate();
+    	LocalDate maxDate = searchResponse.getMaxDate();
+
+        return new ApiResponse<>(
+        		true, 
+        		List.of("Tasks Searched"), 
+        		analysis.search(
+        				service.getTaskList(), 
+        				subject, 
+        				minDate, 
+        				maxDate, 
+        				minDiff, 
+        				maxDiff, 
+        				status, 
+        				field, 
+        				order
+        			)
+        	);
 	}
 }
