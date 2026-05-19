@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import com.engalladofc.vector.model.Task;
 import com.engalladofc.vector.model.Status;
 import com.engalladofc.vector.dto.SearchValidationResult;
+import com.engalladofc.vector.dto.TaskValidationResult;
 import com.engalladofc.vector.repository.TaskRepository;
 
 import java.util.List;
@@ -37,6 +38,27 @@ public class TaskService {
     //===============================//
     //        TASK VALIDATION        //
     //===============================//
+    
+    public TaskValidationResult validateTask(String title, String subject, String description, String stringDeadline, Integer difficulty) {
+    	List<String> errors = new ArrayList<>();
+
+    	validateTitle(errors, title);
+    	validateSubject(errors, subject);
+    	validateDescription(errors, description);
+    	LocalDate deadline = validateDeadline(errors, stringDeadline, "Deadline");
+    	validateDifficulty(errors, difficulty, "Difficulty");
+    	
+    	return new TaskValidationResult(
+    			errors,
+    			title,
+    			subject,
+    			description,
+    			deadline,
+    			difficulty
+    		);
+    }
+    
+    
     public SearchValidationResult validateSearch(String stringMinDate, String stringMaxDate, Integer minDiff, Integer maxDiff) {
     	List<String> errors = new ArrayList<>();
 

@@ -9,6 +9,7 @@ import com.engalladofc.vector.model.SortOrder;
 import com.engalladofc.vector.dto.ApiResponse;
 import com.engalladofc.vector.dto.TaskRequest;
 import com.engalladofc.vector.dto.SearchValidationResult;
+import com.engalladofc.vector.dto.TaskValidationResult;
 import com.engalladofc.vector.service.TaskService;
 import com.engalladofc.vector.service.AnalysisService;
 
@@ -50,20 +51,40 @@ public class TaskController {
     //===============================//
     @PostMapping("/tasks")
     public ApiResponse<Void> createTask(@RequestBody TaskRequest body) {
+    	
+		String title = body.title;
+		String subject = body.subject; 
+		String description = body.description;
+        String stringDeadline = body.deadline;
+        Integer difficulty = body.difficulty;
+        Status status = body.status;
+    	
+    	TaskValidationResult taskResponse = service.validateTask(title, subject, description, stringDeadline, difficulty);
+
+    	List<String> errors = taskResponse.getErrors();
+
+    	if (!errors.isEmpty()) {
+    	    return new ApiResponse<>(
+    	        false,
+    	        errors,
+    	        null
+    	    );
+    	}
+    	
         service.createTask(
-        		body.title, 
-        		body.subject, 
-        		body.description,
-                body.deadline != null ? LocalDate.parse(body.deadline) : null,
-                body.difficulty, 
-                body.status
+        		taskResponse.getTitle(),
+        		taskResponse.getSubject(),
+        		taskResponse.getDescription(),
+        		taskResponse.getDeadline(),
+        		taskResponse.getDifficulty(),
+        		status
         	);
         
         service.saveTasks();
         
         return new ApiResponse<>(
         		true, 
-        		List.of("Task created"), 
+        		List.of("Task updated"), 
         		null
         	);
     }
@@ -74,14 +95,35 @@ public class TaskController {
     //===============================//
     @PutMapping("/tasks/{id}")
     public ApiResponse<Void> editTask(@PathVariable int id, @RequestBody TaskRequest body) {
+    	
+
+		String title = body.title;
+		String subject = body.subject; 
+		String description = body.description;
+        String stringDeadline = body.deadline;
+        Integer difficulty = body.difficulty;
+        Status status = body.status;
+    	
+    	TaskValidationResult taskResponse = service.validateTask(title, subject, description, stringDeadline, difficulty);
+
+    	List<String> errors = taskResponse.getErrors();
+
+    	if (!errors.isEmpty()) {
+    	    return new ApiResponse<>(
+    	        false,
+    	        errors,
+    	        null
+    	    );
+    	}
+    	
         service.editTask(
         		id, 
-        		body.title, 
-        		body.subject, 
-        		body.description,
-                body.deadline != null ? LocalDate.parse(body.deadline) : null,
-                body.difficulty, 
-                body.status
+        		taskResponse.getTitle(),
+        		taskResponse.getSubject(),
+        		taskResponse.getDescription(),
+        		taskResponse.getDeadline(),
+        		taskResponse.getDifficulty(),
+        		status
         	);
         
         service.saveTasks();
