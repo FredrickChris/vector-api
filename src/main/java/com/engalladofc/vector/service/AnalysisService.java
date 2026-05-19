@@ -19,8 +19,8 @@ public class AnalysisService {
     //===============================//
     //            SEARCH             //
     //===============================//
-	public List<Task> search(ArrayList<Task> tasks, LocalDate minDate, LocalDate maxDate, Integer minDiff, Integer maxDiff, Status status, SortField field, SortOrder order) {
-		return sort(filter(tasks, minDate, maxDate, minDiff, maxDiff, status), field, order);
+	public List<Task> search(ArrayList<Task> tasks, String subject, LocalDate minDate, LocalDate maxDate, Integer minDiff, Integer maxDiff, Status status, SortField field, SortOrder order) {
+		return sort(filter(tasks, subject, minDate, maxDate, minDiff, maxDiff, status), field, order);
 	}
 	
 	
@@ -29,10 +29,11 @@ public class AnalysisService {
     //           FILTERING           //
     //===============================//
 	
-	private ArrayList<Task> filter(ArrayList<Task> tasks, LocalDate minDate, LocalDate maxDate, Integer minDiff, Integer maxDiff, Status status) {
+	private ArrayList<Task> filter(ArrayList<Task> tasks, String subject, LocalDate minDate, LocalDate maxDate, Integer minDiff, Integer maxDiff, Status status) {
 		
 		ArrayList<Task> filtered = new ArrayList<>(tasks);
 		
+		filtered = filterBySubject(filtered, subject);
 		filtered = filterByDate(filtered, minDate, maxDate);
 		filtered = filterByDifficulty(filtered, minDiff, maxDiff);
 		filtered = filterByStatus(filtered, status);
@@ -40,27 +41,46 @@ public class AnalysisService {
 		return filtered;
 	}
 	
+	
+	private ArrayList<Task> filterBySubject(ArrayList<Task> tasks, String subject) {
+
+		if(subject == null) {
+			return new ArrayList<>(tasks);
+		}
+
+		ArrayList<Task> filtered = new ArrayList<>();
+		for(Task task: tasks) {
+			if(task.getSubject().equalsIgnoreCase(subject)) {
+				filtered.add(task);
+			}
+		}
+		return filtered;
+		
+	}
+	
 	private ArrayList<Task> filterByDate(ArrayList<Task> tasks, LocalDate minDate, LocalDate maxDate) {
 
-		if(minDate == null && maxDate ==null) {
+		if(minDate == null && maxDate == null) {
 			return new ArrayList<>(tasks);
 		}
 		
 		ArrayList<Task> filtered = new ArrayList<>();
+		
 		Integer minDays = minDate != null ? Math.toIntExact(LocalDate.now().until(minDate, ChronoUnit.DAYS)): null;
 		Integer maxDays = maxDate != null ? Math.toIntExact(LocalDate.now().until(maxDate, ChronoUnit.DAYS)): null;
+		
 		for(Task task: tasks) {
-			if(task.getDeadline() != null) {
-				long deadline = LocalDate.now().until(task.getDeadline(), ChronoUnit.DAYS);
-				if (minDays != null && maxDays != null && deadline >= minDays && deadline <= maxDays) {
-					filtered.add(task);
-				}
-				else if(minDays == null && maxDays != null && deadline <= maxDays) {
-					filtered.add(task);
-				}
-				else if(minDays != null && maxDays == null && deadline >= minDays) {
-					filtered.add(task);
-				}
+			
+			Integer deadline = task.getDeadline() != null ? Math.toIntExact(LocalDate.now().until(minDate, ChronoUnit.DAYS)): null;
+			
+			if ((minDays != null && maxDays != null) && (deadline != null && deadline >= minDays && deadline <= maxDays)) {
+				filtered.add(task);
+			}
+			else if((minDays == null && maxDays != null) && (deadline == null || deadline <= maxDays)) {
+				filtered.add(task);
+			}
+			else if((minDays != null && maxDays == null) && (deadline == null || deadline >= minDays)) {
+				filtered.add(task);
 			}
 		}
 		return filtered;
@@ -68,10 +88,20 @@ public class AnalysisService {
 	
 	
 	private ArrayList<Task> filterByDifficulty(ArrayList<Task> tasks, Integer minDiff, Integer maxDiff) {
+		
 		ArrayList<Task> filtered = new ArrayList<>();
+		
 		for(Task task: tasks) {
+			
 			Integer difficulty = task.getDifficulty();
-			if(difficulty != null && difficulty >= minDiff && difficulty <= maxDiff) {
+			
+			if ((minDiff != null && maxDiff != null) && (difficulty != null && difficulty >= minDiff && difficulty <= maxDiff)) {
+				filtered.add(task);
+			}
+			else if((minDiff == null && maxDiff != null) && (difficulty == null || difficulty <= maxDiff)) {
+				filtered.add(task);
+			}
+			else if((minDiff != null && maxDiff == null) && (difficulty == null || difficulty >= minDiff)) {
 				filtered.add(task);
 			}
 		}
