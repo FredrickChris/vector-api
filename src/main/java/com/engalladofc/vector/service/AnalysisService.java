@@ -8,8 +8,8 @@ import com.engalladofc.vector.model.SortField;
 import com.engalladofc.vector.model.SortOrder;
 
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
 import java.time.LocalDate;	
 import java.time.temporal.ChronoUnit;
 
@@ -19,7 +19,7 @@ public class AnalysisService {
     //===============================//
     //            SEARCH             //
     //===============================//
-	public List<Task> search(ArrayList<Task> tasks, String subject, LocalDate minDate, LocalDate maxDate, Integer minDiff, Integer maxDiff, Status status, SortField field, SortOrder order) {
+	public List<Task> search(List<Task> tasks, String subject, LocalDate minDate, LocalDate maxDate, Integer minDiff, Integer maxDiff, Status status, SortField field, SortOrder order) {
 		return sort(filter(tasks, subject, minDate, maxDate, minDiff, maxDiff, status), field, order);
 	}
 	
@@ -29,9 +29,9 @@ public class AnalysisService {
     //           FILTERING           //
     //===============================//
 	
-	private ArrayList<Task> filter(ArrayList<Task> tasks, String subject, LocalDate minDate, LocalDate maxDate, Integer minDiff, Integer maxDiff, Status status) {
+	private List<Task> filter(List<Task> tasks, String subject, LocalDate minDate, LocalDate maxDate, Integer minDiff, Integer maxDiff, Status status) {
 		
-		ArrayList<Task> filtered = new ArrayList<>(tasks);
+		List<Task> filtered = new ArrayList<>(tasks);
 		
 		filtered = filterBySubject(filtered, subject);
 		filtered = filterByDate(filtered, minDate, maxDate);
@@ -42,13 +42,13 @@ public class AnalysisService {
 	}
 	
 	
-	private ArrayList<Task> filterBySubject(ArrayList<Task> tasks, String subject) {
+	private List<Task> filterBySubject(List<Task> tasks, String subject) {
 
 		if(subject == null) {
 			return new ArrayList<>(tasks);
 		}
 
-		ArrayList<Task> filtered = new ArrayList<>();
+		List<Task> filtered = new ArrayList<>();
 		for(Task task: tasks) {
 			if(task.getSubject().equalsIgnoreCase(subject)) {
 				filtered.add(task);
@@ -58,13 +58,13 @@ public class AnalysisService {
 		
 	}
 	
-	private ArrayList<Task> filterByDate(ArrayList<Task> tasks, LocalDate minDate, LocalDate maxDate) {
+	private List<Task> filterByDate(List<Task> tasks, LocalDate minDate, LocalDate maxDate) {
 
 		if(minDate == null && maxDate == null) {
 			return new ArrayList<>(tasks);
 		}
 		
-		ArrayList<Task> filtered = new ArrayList<>();
+		List<Task> filtered = new ArrayList<>();
 		
 		Integer minDays = minDate != null ? Math.toIntExact(LocalDate.now().until(minDate, ChronoUnit.DAYS)): null;
 		Integer maxDays = maxDate != null ? Math.toIntExact(LocalDate.now().until(maxDate, ChronoUnit.DAYS)): null;
@@ -87,9 +87,9 @@ public class AnalysisService {
 	}
 	
 	
-	private ArrayList<Task> filterByDifficulty(ArrayList<Task> tasks, Integer minDiff, Integer maxDiff) {
+	private List<Task> filterByDifficulty(List<Task> tasks, Integer minDiff, Integer maxDiff) {
 		
-		ArrayList<Task> filtered = new ArrayList<>();
+		List<Task> filtered = new ArrayList<>();
 		
 		for(Task task: tasks) {
 			
@@ -109,13 +109,13 @@ public class AnalysisService {
 	}
 	
 	
-	private ArrayList<Task> filterByStatus(ArrayList<Task> tasks, Status status) {
+	private List<Task> filterByStatus(List<Task> tasks, Status status) {
 		
 		if (status == null) {
 		    return new ArrayList<>(tasks);
 		}
 		
-		ArrayList<Task> filtered = new ArrayList<>();
+		List<Task> filtered = new ArrayList<>();
 		for(Task task: tasks) {
 			if(task.getStatus() == status) {
 				filtered.add(task);
@@ -129,9 +129,9 @@ public class AnalysisService {
     //===============================//
     //            SORTING            //
     //===============================//
-	private ArrayList<Task> sort(ArrayList<Task> tasks, SortField field, SortOrder order){
+	private List<Task> sort(List<Task> tasks, SortField field, SortOrder order){
 
-		ArrayList<Task> sorted = new ArrayList<>(tasks);
+		List<Task> sorted = new ArrayList<>(tasks);
 		
 		switch(field) {
 		case DEADLINE:
@@ -146,8 +146,8 @@ public class AnalysisService {
 		return sorted;
 	}
 	
-	private ArrayList<Task> sortByDeadline(ArrayList<Task> tasks, SortOrder order) {
-		ArrayList<Task> sorted = new ArrayList<>(tasks);
+	private List<Task> sortByDeadline(List<Task> tasks, SortOrder order) {
+		List<Task> sorted = new ArrayList<>(tasks);
 
 		sorted.sort((a, b) -> {
 			LocalDate da = a.getDeadline();
@@ -172,8 +172,8 @@ public class AnalysisService {
 	}
 
 
-	private ArrayList<Task> sortByPriority(ArrayList<Task> tasks, SortOrder order) {
-		ArrayList<Task> sorted = new ArrayList<>(tasks);
+	private List<Task> sortByPriority(List<Task> tasks, SortOrder order) {
+		List<Task> sorted = new ArrayList<>(tasks);
 	
 		sorted.sort((a, b) -> {
 			double scoreA = calculatePriority(a);

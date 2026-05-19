@@ -4,12 +4,13 @@ import com.engalladofc.vector.model.Task;
 import com.engalladofc.vector.model.Status;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.ArrayList;
 import java.io.*;
 
 public class TaskRepository {
 
-    private ArrayList<Task> tasks = new ArrayList<>();
+    private List<Task> tasks = new ArrayList<>();
     
     private Integer id=0;
 
@@ -59,7 +60,7 @@ public class TaskRepository {
     //===============================//
     //           ALL TASK            //
     //===============================//
-    public ArrayList<Task> getAllTasks() {
+    public List<Task> getAllTasks() {
     	return tasks;
     }
     
