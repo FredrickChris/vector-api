@@ -6,6 +6,8 @@ import com.engalladofc.vector.model.Task;
 import com.engalladofc.vector.model.Status;
 import com.engalladofc.vector.model.SortField;
 import com.engalladofc.vector.model.SortOrder;
+import com.engalladofc.vector.dto.ApiResponse;
+import com.engalladofc.vector.dto.SearchValidationResult;
 
 
 import java.util.List;
@@ -19,8 +21,42 @@ public class AnalysisService {
     //===============================//
     //            SEARCH             //
     //===============================//
-	public List<Task> search(List<Task> tasks, String subject, LocalDate minDate, LocalDate maxDate, Integer minDiff, Integer maxDiff, Status status, SortField field, SortOrder order) {
-		return sort(filter(tasks, subject, minDate, maxDate, minDiff, maxDiff, status), field, order);
+	public ApiResponse<List<Task>> handleSearch(
+	        TaskService service,
+	        String subject,
+	        String stringMinDate,
+	        String stringMaxDate,
+	        Status status,
+	        SortField field,
+	        SortOrder order,
+	        Integer minDiff,
+	        Integer maxDiff) {
+
+	    SearchValidationResult searchResponse = service.validateSearch(stringMinDate, stringMaxDate, minDiff, maxDiff);
+
+	    if (!searchResponse.getErrors().isEmpty()) {
+	        return new ApiResponse<>(false, searchResponse.getErrors(), null);
+	    }
+
+	    subject = (subject != null && !subject.isBlank()) ? subject.trim().toLowerCase() : null;
+
+	    return new ApiResponse<>(
+	            true,
+	            List.of("Tasks searched"),
+	            sort(
+	    				filter(
+	    						service.getTaskList(), 
+	    						subject, 
+	    						searchResponse.getMinDate(), 
+	    						searchResponse.getMaxDate(), 
+	    						minDiff, 
+	    						maxDiff, 
+	    						status
+	    					), 
+	    				field, 
+	    				order
+	    			)
+	    );
 	}
 	
 	

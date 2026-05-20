@@ -8,17 +8,14 @@ import com.engalladofc.vector.model.SortField;
 import com.engalladofc.vector.model.SortOrder;
 import com.engalladofc.vector.dto.ApiResponse;
 import com.engalladofc.vector.dto.TaskRequest;
-import com.engalladofc.vector.dto.SearchValidationResult;
-import com.engalladofc.vector.dto.TaskValidationResult;
 import com.engalladofc.vector.service.TaskService;
 import com.engalladofc.vector.service.AnalysisService;
 
 import java.util.List;
-import java.time.LocalDate;
 
 @RestController
 public class TaskController {
-	
+
     //===============================//
     //         INITIALIZATION        //
     //===============================//
@@ -36,13 +33,7 @@ public class TaskController {
     //===============================//
     @GetMapping("/tasks")
     public ApiResponse<List<Task>> getTasks() {
-        service.readTasks();
-        
-        return new ApiResponse<>(
-        		true, 
-        		List.of("Tasks fetched"), 
-        		service.getTaskList()
-        	);
+        return service.handleGetTasks();
     }
 
 
@@ -51,42 +42,7 @@ public class TaskController {
     //===============================//
     @PostMapping("/tasks")
     public ApiResponse<Void> createTask(@RequestBody TaskRequest body) {
-    	
-		String title = body.title;
-		String subject = body.subject; 
-		String description = body.description;
-        String stringDeadline = body.deadline;
-        Integer difficulty = body.difficulty;
-        Status status = body.status;
-    	
-    	TaskValidationResult taskResponse = service.validateTask(title, subject, description, stringDeadline, difficulty);
-
-    	List<String> errors = taskResponse.getErrors();
-
-    	if (!errors.isEmpty()) {
-    	    return new ApiResponse<>(
-    	        false,
-    	        errors,
-    	        null
-    	    );
-    	}
-    	
-        service.createTask(
-        		taskResponse.getTitle(),
-        		taskResponse.getSubject(),
-        		taskResponse.getDescription(),
-        		taskResponse.getDeadline(),
-        		taskResponse.getDifficulty(),
-        		status
-        	);
-        
-        service.saveTasks();
-        
-        return new ApiResponse<>(
-        		true, 
-        		List.of("Task updated"), 
-        		null
-        	);
+        return service.handleCreateTask(body);
     }
 
 
@@ -95,44 +51,7 @@ public class TaskController {
     //===============================//
     @PutMapping("/tasks/{id}")
     public ApiResponse<Void> editTask(@PathVariable int id, @RequestBody TaskRequest body) {
-    	
-
-		String title = body.title;
-		String subject = body.subject; 
-		String description = body.description;
-        String stringDeadline = body.deadline;
-        Integer difficulty = body.difficulty;
-        Status status = body.status;
-    	
-    	TaskValidationResult taskResponse = service.validateTask(title, subject, description, stringDeadline, difficulty);
-
-    	List<String> errors = taskResponse.getErrors();
-
-    	if (!errors.isEmpty()) {
-    	    return new ApiResponse<>(
-    	        false,
-    	        errors,
-    	        null
-    	    );
-    	}
-    	
-        service.editTask(
-        		id, 
-        		taskResponse.getTitle(),
-        		taskResponse.getSubject(),
-        		taskResponse.getDescription(),
-        		taskResponse.getDeadline(),
-        		taskResponse.getDifficulty(),
-        		status
-        	);
-        
-        service.saveTasks();
-        
-        return new ApiResponse<>(
-        		true, 
-        		List.of("Task updated"), 
-        		null
-        	);
+        return service.handleEditTask(id, body);
     }
 
 
@@ -141,13 +60,7 @@ public class TaskController {
     //===============================//
     @DeleteMapping("/tasks/{id}")
     public ApiResponse<Void> deleteTask(@PathVariable int id) {
-        service.deleteTask(id);
-        service.saveTasks();
-        return new ApiResponse<>(
-        		true, 
-        		List.of("Task deleted"), 
-        		null
-        	);
+        return service.handleDeleteTask(id);
     }
 
 
@@ -156,22 +69,12 @@ public class TaskController {
     //===============================//
     @PostMapping("/tasks/save")
     public ApiResponse<Void> saveTasks() {
-        service.saveTasks();
-        return new ApiResponse<>(
-        		true, 
-        		List.of("Tasks saved"), 
-        		null
-        	);
+        return service.handleSaveTasks();
     }
 
     @PostMapping("/tasks/read")
     public ApiResponse<Void> readTasks() {
-        service.readTasks();
-        return new ApiResponse<>(
-        		true, 
-        		List.of("Tasks loaded"), 
-        		null
-        	);
+        return service.handleReadTasks();
     }
 
 
@@ -179,7 +82,7 @@ public class TaskController {
     //           SEARCHING           //
     //===============================//
     @GetMapping("/tasks/search")
-    public ApiResponse<List<Task>> sortTasks(
+    public ApiResponse<List<Task>> searchTasks(
             @RequestParam(required = false) String subject,
             @RequestParam(required = false) String stringMinDate,
             @RequestParam(required = false) String stringMaxDate,
@@ -187,40 +90,7 @@ public class TaskController {
             @RequestParam(defaultValue = "PRIORITY") SortField field,
             @RequestParam(defaultValue = "ASCENDING") SortOrder order,
             @RequestParam(required = false) Integer minDiff,
-            @RequestParam(required = false) Integer maxDiff
-    	) {
-    	
-    	SearchValidationResult searchResponse = service.validateSearch(stringMinDate, stringMaxDate, minDiff, maxDiff);
-    	
-    	List<String> errors = searchResponse.getErrors();
-
-    	if (!errors.isEmpty()) {
-    	    return new ApiResponse<>(
-    	        false,
-    	        errors,
-    	        null
-    	    );
-    	}
-    	
-    	subject = (subject != null && !subject.isBlank()) ? subject.trim().toLowerCase() : null;
-    	
-    	LocalDate minDate = searchResponse.getMinDate();
-    	LocalDate maxDate = searchResponse.getMaxDate();
-
-        return new ApiResponse<>(
-        		true, 
-        		List.of("Tasks Searched"), 
-        		analysis.search(
-        				service.getTaskList(), 
-        				subject, 
-        				minDate, 
-        				maxDate, 
-        				minDiff, 
-        				maxDiff, 
-        				status, 
-        				field, 
-        				order
-        			)
-        	);
-	}
+            @RequestParam(required = false) Integer maxDiff) {
+        return analysis.handleSearch(service, subject, stringMinDate, stringMaxDate, status, field, order, minDiff, maxDiff);
+    }
 }
