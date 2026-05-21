@@ -6,8 +6,6 @@ import com.engalladofc.vector.model.Task;
 import com.engalladofc.vector.model.Status;
 import com.engalladofc.vector.model.SortField;
 import com.engalladofc.vector.model.SortOrder;
-import com.engalladofc.vector.dto.ApiResponse;
-import com.engalladofc.vector.dto.SearchValidationResult;
 
 
 import java.util.List;
@@ -86,7 +84,7 @@ public class AnalysisService {
 		
 		for(Task task: tasks) {
 			
-			Integer deadline = task.getDeadline() != null ? Math.toIntExact(LocalDate.now().until(minDate, ChronoUnit.DAYS)): null;
+			Integer deadline = task.getDeadline() != null ? Math.toIntExact(LocalDate.now().until(task.getDeadline(), ChronoUnit.DAYS)): null;
 			
 			if ((minDays != null && maxDays != null) && (deadline != null && deadline >= minDays && deadline <= maxDays)) {
 				filtered.add(task);
@@ -103,6 +101,10 @@ public class AnalysisService {
 	
 	
 	private List<Task> filterByDifficulty(List<Task> tasks, Integer minDiff, Integer maxDiff) {
+		
+		if (minDiff == null && maxDiff == null) {
+			return new ArrayList<>(tasks);
+		}
 		
 		List<Task> filtered = new ArrayList<>();
 		
