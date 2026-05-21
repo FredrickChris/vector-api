@@ -3,6 +3,8 @@ package com.engalladofc.vector.service;
 import org.springframework.stereotype.Service;
 
 import com.engalladofc.vector.model.Task;
+import com.engalladofc.vector.model.SortField;
+import com.engalladofc.vector.model.SortOrder;
 import com.engalladofc.vector.model.Status;
 import com.engalladofc.vector.dto.ApiResponse;
 import com.engalladofc.vector.dto.SearchValidationResult;
@@ -19,6 +21,7 @@ import java.time.format.DateTimeParseException;
 public class TaskService {
 
     private TaskRepository repo = new TaskRepository();
+    private AnalysisService analysis = new AnalysisService();
 
 
     //===============================//
@@ -43,6 +46,48 @@ public class TaskService {
 
         return new ApiResponse<>(true, List.of("Task created"), null);
     }
+    
+    //===============================//
+    //            SEARCH             //
+    //===============================//
+	public ApiResponse<List<Task>> handleSearch(
+    		String subject, 
+    		String stringMinDate, 
+    		String stringMaxDate, 
+    		Status status, 
+    		SortField field, 
+    		SortOrder order, 
+    		Integer minDiff, 
+    		Integer maxDiff
+		) 
+	{
+
+		SearchValidationResult searchResponse = validateSearch(stringMinDate, stringMaxDate, minDiff, maxDiff);
+		
+		List<String> errors = searchResponse.getErrors();
+		
+	    if (!errors.isEmpty()) {
+	        return new ApiResponse<>(false, errors, null);
+	    }
+
+	    subject = (subject != null && !subject.isBlank()) ? subject.trim().toLowerCase() : null;
+
+	    return new ApiResponse<>(
+	            true,
+	            List.of("Tasks searched"),
+	            analysis.searchTasks(
+	    				getTaskList(), 
+	    				subject, 
+	    				searchResponse.getMinDate(), 
+	    				searchResponse.getMaxDate(), 
+	    				searchResponse.getMinDiff(), 
+	    				searchResponse.getMaxDiff(),
+	    				status,
+	    				field, 
+	    				order
+	    			)
+	    );
+	}
 
 
     //===============================//

@@ -9,7 +9,6 @@ import com.engalladofc.vector.model.SortOrder;
 import com.engalladofc.vector.dto.ApiResponse;
 import com.engalladofc.vector.dto.TaskRequest;
 import com.engalladofc.vector.service.TaskService;
-import com.engalladofc.vector.service.AnalysisService;
 
 import java.util.List;
 
@@ -20,11 +19,9 @@ public class TaskController {
     //         INITIALIZATION        //
     //===============================//
     private final TaskService service;
-    private final AnalysisService analysis;
 
-    public TaskController(TaskService service, AnalysisService analysis) {
+    public TaskController(TaskService service) {
         this.service = service;
-        this.analysis = analysis;
     }
 
 
@@ -90,7 +87,18 @@ public class TaskController {
             @RequestParam(defaultValue = "PRIORITY") SortField field,
             @RequestParam(defaultValue = "ASCENDING") SortOrder order,
             @RequestParam(required = false) Integer minDiff,
-            @RequestParam(required = false) Integer maxDiff) {
-        return analysis.handleSearch(service, subject, stringMinDate, stringMaxDate, status, field, order, minDiff, maxDiff);
+            @RequestParam(required = false) Integer maxDiff
+    	)
+    {
+        return service.handleSearch(
+        		subject, 
+        		stringMinDate, 
+        		stringMaxDate, 
+        		status, 
+        		field, 
+        		order, 
+        		minDiff, 
+        		maxDiff
+        	);
     }
 }

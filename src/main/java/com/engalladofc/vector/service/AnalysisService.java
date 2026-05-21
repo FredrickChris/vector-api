@@ -17,50 +17,29 @@ import java.time.temporal.ChronoUnit;
 
 @Service
 public class AnalysisService {
+		
+    //===============================//
+    //           SEARCHING           //
+    //===============================//
 	
-    //===============================//
-    //            SEARCH             //
-    //===============================//
-	public ApiResponse<List<Task>> handleSearch(
-	        TaskService service,
-	        String subject,
-	        String stringMinDate,
-	        String stringMaxDate,
-	        Status status,
-	        SortField field,
-	        SortOrder order,
-	        Integer minDiff,
-	        Integer maxDiff) {
-
-	    SearchValidationResult searchResponse = service.validateSearch(stringMinDate, stringMaxDate, minDiff, maxDiff);
-
-	    if (!searchResponse.getErrors().isEmpty()) {
-	        return new ApiResponse<>(false, searchResponse.getErrors(), null);
-	    }
-
-	    subject = (subject != null && !subject.isBlank()) ? subject.trim().toLowerCase() : null;
-
-	    return new ApiResponse<>(
-	            true,
-	            List.of("Tasks searched"),
-	            sort(
-	    				filter(
-	    						service.getTaskList(), 
-	    						subject, 
-	    						searchResponse.getMinDate(), 
-	    						searchResponse.getMaxDate(), 
-	    						minDiff, 
-	    						maxDiff, 
-	    						status
-	    					), 
-	    				field, 
-	    				order
-	    			)
-	    );
+	public List<Task> searchTasks(List<Task> tasks, String subject, LocalDate minDate, LocalDate maxDate, Integer minDiff, Integer maxDiff, Status status, SortField field, SortOrder order) {
+		return sort(
+	    		filter(
+	    				tasks, 
+	   					subject, 
+	  					minDate, 
+	    				maxDate, 
+	    				minDiff, 
+	    				maxDiff,
+	    				status
+	    			), 
+	   			field, 
+	  			order
+	   		);
 	}
 	
 	
-	
+		
     //===============================//
     //           FILTERING           //
     //===============================//
