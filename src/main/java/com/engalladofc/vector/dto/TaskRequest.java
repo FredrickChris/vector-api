@@ -8,5 +8,9 @@ public class TaskRequest {
     public String description;
     public String deadline;
     public Integer difficulty;
-    public Status status;
+    public Status status = Status.PENDING;
+
+    public void setStatus(Status status) {
+        this.status = status != null ? status : Status.PENDING;
+    }
 }
