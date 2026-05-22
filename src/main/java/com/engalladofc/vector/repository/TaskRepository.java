@@ -82,6 +82,7 @@ public class TaskRepository {
     //           READ TASK           //
     //===============================//
     public void readTasks() {
+    	tasks.clear();
         File f = new File(file);
         if (!f.exists()) return;
 
