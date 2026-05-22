@@ -83,22 +83,22 @@ public class TaskController {
             @RequestParam(required = false) String subject,
             @RequestParam(required = false) String stringMinDate,
             @RequestParam(required = false) String stringMaxDate,
+            @RequestParam(required = false) Integer minDiff,
+            @RequestParam(required = false) Integer maxDiff,
             @RequestParam(required = false) Status status,
             @RequestParam(defaultValue = "PRIORITY") SortField field,
-            @RequestParam(defaultValue = "ASCENDING") SortOrder order,
-            @RequestParam(required = false) Integer minDiff,
-            @RequestParam(required = false) Integer maxDiff
+            @RequestParam(defaultValue = "ASCENDING") SortOrder order
     	)
     {
         return service.handleSearch(
         		subject, 
         		stringMinDate, 
         		stringMaxDate, 
+        		minDiff, 
+        		maxDiff,
         		status, 
         		field, 
-        		order, 
-        		minDiff, 
-        		maxDiff
+        		order
         	);
     }
 }

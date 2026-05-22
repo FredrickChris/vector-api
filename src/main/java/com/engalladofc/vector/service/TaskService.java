@@ -54,11 +54,11 @@ public class TaskService {
     		String subject, 
     		String stringMinDate, 
     		String stringMaxDate, 
+    		Integer minDiff, 
+    		Integer maxDiff,
     		Status status, 
     		SortField field, 
-    		SortOrder order, 
-    		Integer minDiff, 
-    		Integer maxDiff
+    		SortOrder order
 		) 
 	{
 
