@@ -63,7 +63,7 @@ public class AnalysisService {
 
 		List<Task> filtered = new ArrayList<>();
 		for(Task task: tasks) {
-			if(task.getSubject().equalsIgnoreCase(subject)) {
+			if(task.getSubject().equals(subject)) {
 				filtered.add(task);
 			}
 		}
