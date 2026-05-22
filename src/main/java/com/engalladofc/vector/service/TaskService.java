@@ -168,8 +168,17 @@ public class TaskService {
 
         LocalDate minDate = validateDeadline(errors, stringMinDate, "Earliest Deadline");
         LocalDate maxDate = validateDeadline(errors, stringMaxDate, "Latest Deadline");
+        
+        if (minDate != null && maxDate != null && minDate.isAfter(maxDate)) {
+            errors.add("Earliest deadline cannot be after latest deadline");
+        }
+        
         validateDifficulty(errors, minDiff, "Minimum Difficulty");
         validateDifficulty(errors, maxDiff, "Maximum Difficulty");
+        
+        if (minDiff != null && maxDiff != null && minDiff > maxDiff) {
+            errors.add("Minimum difficulty cannot be greater than maximum difficulty");
+        }
 
         return new SearchValidationResult(errors, minDate, maxDate, minDiff, maxDiff);
     }
@@ -214,17 +223,5 @@ public class TaskService {
     //===============================//
     public List<Task> getTaskList() {
         return repo.getAllTasks();
-    }
-
-    public void deleteTask(int id) {
-        repo.deleteTask(id);
-    }
-
-    public void readTasks() {
-        repo.readTasks();
-    }
-
-    public void saveTasks() {
-        repo.saveTasks();
     }
 }
